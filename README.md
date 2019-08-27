@@ -14,6 +14,6 @@ Created by Songqun Gao Aug,27,2019
 
 Adapted from Programmer Markus Petershofen
 
-![1566896423924](C:\Users\wilso\AppData\Roaming\Typora\typora-user-images\1566896423924.png)
+![pacman_exploration](C:\Users\wilso\Desktop\pacman_exploration\pictures\pacman_exploration.png)
 
-![1566896439320](C:\Users\wilso\AppData\Roaming\Typora\typora-user-images\1566896439320.png)
+![exploration2](C:\Users\wilso\Desktop\pacman_exploration\pictures\exploration2.png)
