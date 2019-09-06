@@ -53,13 +53,13 @@ pacman_Fig = figure('units','pixels','Position',[limit_left limit_down figure_si
     'WindowKeyPressFcn',@KeyAction,...              % Keyboard-Callback
     'CloseRequestFcn',@(s,e)PacmanCloseFcn);        % when figure is closed
 
+m = 25 ; n = m*0.6; %n=30
 myAxes1 = axes('Units','normalized','Position',[0 0.04 1 0.90],...                                            
-    'XLim',[-3 30],'YLim',[-3 50]); 
+    'XLim',[-3 n],'YLim',[-3 m]); 
 hold(myAxes1,'on');
 axis(myAxes1,'off','equal');
 
 %% wall Map
-m = 50 ; n = m*0.6; %n=30
 wall = [0,0; n,0; n,m; 0,m; 0,0; NaN,NaN;       ...
     0,0.4*m; 0.4*m,0.4*m; NaN,NaN;                            ...
     0,0.8*m; 0.12*m,0.8*m; NaN,NaN;  0.28*m,0.8*m; 0.4*m,0.8*m; NaN,NaN;   ...
@@ -83,13 +83,15 @@ end
 coins.data = coins.data';
 coins.originalData = coins.data;
 coins.plot = plot(coins.data(:,1),coins.data(:,2),'.','Color',[255 185 151]/255,'MarkerSize',7); % plot all coins
+WriteCoin(coins.data);
+
 
 %% Directions
 allDirections = getDirMap(MAP);
 
 %% Initialize pacman
-pacman.size = 0.8;          % pacman size
-pacman.pos = [14 8];      % position of pacman
+pacman.size = 1.5;          % pacman size
+pacman.pos = [12 8];      % position of pacman
 pacman.dir = 0;             % direction of pacman
 pacman.oldDir = 1;          % old direction of pacman
 pacman.status = -2;         % -2 is normal,maybe useless
@@ -178,7 +180,6 @@ musicIcon.data(musicIcon.data==1) = 8;
 musicIcon.data(musicIcon.data==0) = 1;
 musicIcon.plot = imagesc('XData',[0 1.5]-2,'YData',[1.5 0]-2.75,'CData',musicIcon.data,'Visible','on','Parent',myAxes1,'ButtonDownFcn',@(s,e)musicOnOff);
 
-
 %% functions are given below
 
 pacmanLabyCreator_Fig = figure('Visible','off');
@@ -252,7 +253,7 @@ pacmanLabyCreator_Fig = figure('Visible','off');
 
     function newGame
         stop(myTimer)
-        pacman.pos = [14 8];
+        pacman.pos = [12 8];
         pacman.dir = 0;
         pacman.oldDir = 1;
         pacman.status = -2;
@@ -315,15 +316,34 @@ pacmanLabyCreator_Fig = figure('Visible','off');
     end
 
     function coinsFun
-        if any(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'))
+        %if any(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'))
             %这里可以编程吃豆豆的
-            coins.data(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'),:) = [];
-            score.data = score.data+10;
-            sounds.coinEating = 1;
-            if strcmp(get(sounds.timer_c,'Running'),'off')
-                start(sounds.timer_c)
-            end
-        end
+            %tmp = coins.data(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'),:);
+            tmp = pacman.pos;
+            %if tmp
+                x = tmp(1);   y = tmp(2);      
+                for tmp1 = floor(-pacman.size):ceil(pacman.size)
+                    for tmp2 = floor(-pacman.size):ceil(pacman.size)
+                        if (x+tmp1)<0 || (y+tmp2)<0 || (x+tmp1)>n || (y+tmp2)>m
+                            break;
+                        end
+                        if norm([tmp1 tmp2]) <= pacman.size
+                            num = deletecoin(x+tmp1,y+tmp2,coins.data);
+                            if num > 0
+                                coins.data(num,:) = [];
+                                score.data = score.data + 10;
+                            end
+                        end
+                    %coins.data(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'),:) = [];
+                    %score.data = score.data+10;
+                    end
+                end
+                sounds.coinEating = 1;
+                if strcmp(get(sounds.timer_c,'Running'),'off')
+                    start(sounds.timer_c)
+                end
+            %end
+        %end
         
         set(coins.plot,'XData',coins.data(:,1),'YData',coins.data(:,2))
         set(score.plot,'String',['Score: ' num2str(score.data) ' - ' num2str(round(score.data2))])

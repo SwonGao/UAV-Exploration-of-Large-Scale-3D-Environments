@@ -72,3 +72,26 @@ for i = 2 : m + 1
         end
     end
 end
+
+fileID = fopen('direction.txt','w');%NumerateTree/numeratetree/
+fprintf(fileID,'%d\n',m*n);
+for i = 1 : n
+    for j = 1 : m
+        [~,col] = size(direction{i,j});
+        switch col
+            case 1 
+                fprintf(fileID,'%d\n',direction{i,j});
+            case 2 
+                fprintf(fileID,'%d%d\n',direction{i,j});  
+            case 3 
+                fprintf(fileID,'%d%d%d\n',direction{i,j});
+            case 4 
+                fprintf(fileID,'%d%d%d%d\n',direction{i,j});
+            otherwise
+                fprintf(fileID,'\n');
+        end
+    end
+end
+fclose(fileID);
+
+end
