@@ -53,7 +53,7 @@ pacman_Fig = figure('units','pixels','Position',[limit_left limit_down figure_si
     'WindowKeyPressFcn',@KeyAction,...              % Keyboard-Callback
     'CloseRequestFcn',@(s,e)PacmanCloseFcn);        % when figure is closed
 
-m = 25 ; n = m*0.6; %n=30
+m = 50 ; n = m*0.6; %n=30
 myAxes1 = axes('Units','normalized','Position',[0 0.04 1 0.90],...                                            
     'XLim',[-3 n],'YLim',[-3 m]); 
 hold(myAxes1,'on');
@@ -65,8 +65,8 @@ wall = [0,0; n,0; n,m; 0,m; 0,0; NaN,NaN;       ...
     0,0.8*m; 0.12*m,0.8*m; NaN,NaN;  0.28*m,0.8*m; 0.4*m,0.8*m; NaN,NaN;   ...
     0.4*m,0.8*m; 0.4*m,0.28*m; NaN,NaN; 0.4*m,0.12*m; 0.4*m,0 ;  NaN,NaN   ]';
 allWallsPlot = plot(myAxes1,wall(1,:),wall(2,:),'b-','LineWidth',2);    % plot all walls
-hold(myAxes1,'on')
-axis(myAxes1,'off','equal')
+hold(myAxes1,'on');
+axis(myAxes1,'off','equal');
 
 %% Coins Map
 dir = cell(m,n);
@@ -85,17 +85,15 @@ coins.originalData = coins.data;
 coins.plot = plot(coins.data(:,1),coins.data(:,2),'.','Color',[255 185 151]/255,'MarkerSize',7); % plot all coins
 WriteCoin(coins.data);
 
-
 %% Directions
 allDirections = getDirMap(MAP);
 
 %% Initialize pacman
-pacman.size = 1.5;          % pacman size
+pacman.size = 3.5;          % pacman size
 pacman.pos = [12 8];      % position of pacman
 pacman.dir = 0;             % direction of pacman
 pacman.oldDir = 1;          % old direction of pacman
 pacman.status = -2;         % -2 is normal,maybe useless
-
 % Calculate all pacman frames, from closed to fully open
 for ii = 0:18
     pacman.frames{1,ii+1} = [[-0.3 sin(linspace(pi/2+ii*pi/18,5/2*pi-ii*pi/18,50))*pacman.size -0.3];[0 cos(linspace(pi/2+ii*pi/18,5/2*pi-ii*pi/18,50))*pacman.size 0]];
@@ -103,7 +101,6 @@ for ii = 0:18
     pacman.frames{3,ii+1} = [[0.3 sin(linspace(pi/2+ii*pi/18-pi,5/2*pi-ii*pi/18-pi,50))*pacman.size 0.3];[0 cos(linspace(pi/2+ii*pi/18-pi,5/2*pi-ii*pi/18-pi,50))*pacman.size 0]];
     pacman.frames{4,ii+1} = [[0 sin(linspace(pi/2+ii*pi/18-pi/2,5/2*pi-ii*pi/18-pi/2,50))*pacman.size 0];[-0.3 cos(linspace(pi/2+ii*pi/18-pi/2,5/2*pi-ii*pi/18-pi/2,50))*pacman.size -0.3]];
 end
-
 curFrame = 1;           % open-close-frame
 frameDirection = 1;     % direction-frame
 pacman.plot = fill(pacman.frames{pacman.oldDir,curFrame}(1,:)+pacman.pos(1),pacman.frames{pacman.oldDir,curFrame}(2,:)+pacman.pos(2),'y','EdgeColor','y','Parent',myAxes1);
@@ -173,7 +170,6 @@ sounds.intermission1 = audioplayer(i_y, i_Fs);
 sounds.intermission2 = audioplayer(i_y, i_Fs);
 sounds.timer_c = timer('TimerFcn',@(s,e)soundManager_c,'Period',round(length(c_y)/c_Fs*1000)/1000-0.031,'ExecutionMode','fixedRate'); % -0.12
 sounds.coinEating = 0;
-
 musicIcon.data = load('Sounds/musicIcon.mat');
 musicIcon.data = musicIcon.data.musicIcon;
 musicIcon.data(musicIcon.data==1) = 8;
@@ -181,7 +177,6 @@ musicIcon.data(musicIcon.data==0) = 1;
 musicIcon.plot = imagesc('XData',[0 1.5]-2,'YData',[1.5 0]-2.75,'CData',musicIcon.data,'Visible','on','Parent',myAxes1,'ButtonDownFcn',@(s,e)musicOnOff);
 
 %% functions are given below
-
 pacmanLabyCreator_Fig = figure('Visible','off');
     function newGameButtonFun
         if soundsFlag
@@ -205,8 +200,7 @@ pacmanLabyCreator_Fig = figure('Visible','off');
         set(0,'PointerLocation',screenCenter)
         robot = java.awt.Robot;
         robot.mousePress(java.awt.event.InputEvent.BUTTON1_MASK);
-        robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);
-        
+        robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_MASK);        
         newGame
         set(info.text,'Visible','off')
     end
@@ -316,35 +310,30 @@ pacmanLabyCreator_Fig = figure('Visible','off');
     end
 
     function coinsFun
-        %if any(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'))
-            %这里可以编程吃豆豆的
-            %tmp = coins.data(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'),:);
-            tmp = pacman.pos;
-            %if tmp
-                x = tmp(1);   y = tmp(2);      
-                for tmp1 = floor(-pacman.size):ceil(pacman.size)
-                    for tmp2 = floor(-pacman.size):ceil(pacman.size)
-                        if (x+tmp1)<0 || (y+tmp2)<0 || (x+tmp1)>n || (y+tmp2)>m
-                            break;
-                        end
-                        if norm([tmp1 tmp2]) <= pacman.size
-                            num = deletecoin(x+tmp1,y+tmp2,coins.data);
-                            if num > 0
-                                coins.data(num,:) = [];
-                                score.data = score.data + 10;
-                            end
-                        end
-                    %coins.data(ismember(coins.data,findSquare(pacman,pacman.oldDir),'rows'),:) = [];
-                    %score.data = score.data+10;
+        tmp = pacman.pos;
+        x = tmp(1);   y = tmp(2);      
+        for tmp1 = floor(-pacman.size):ceil(pacman.size)
+            for tmp2 = floor(-pacman.size):ceil(pacman.size)
+                if round(x+tmp1)<=0 || round(y+tmp2)<=0 || (x+tmp1)>n || (y+tmp2)>m
+                    continue;
+                end
+                if ~ifconnected([x,y],[x+tmp1,y+tmp2], m, MAP)
+                    continue;
+                end
+                if norm([tmp1 tmp2]) <= pacman.size
+                    num = deletecoin(x+tmp1,y+tmp2,coins.data);
+                    if num > 0 
+                        coins.data(num,:) = [];
+                        score.data = score.data + 10;
                     end
                 end
-                sounds.coinEating = 1;
-                if strcmp(get(sounds.timer_c,'Running'),'off')
-                    start(sounds.timer_c)
-                end
-            %end
-        %end
-        
+            end
+        end
+        sounds.coinEating = 1;
+        if strcmp(get(sounds.timer_c,'Running'),'off')
+            start(sounds.timer_c)
+        end
+            
         set(coins.plot,'XData',coins.data(:,1),'YData',coins.data(:,2))
         set(score.plot,'String',['Score: ' num2str(score.data) ' - ' num2str(round(score.data2))])
         
@@ -377,7 +366,7 @@ pacmanLabyCreator_Fig = figure('Visible','off');
         possibleMoves = allDirections{curSquare(1),curSquare(2)};
     end
 
-    % simple -> simpler -> simplest -> my AI
+    % A*
     function nextMove = shortestPath(square1,square2,entity)
         possibleMoves = allDirections{square1(1),square1(2)};
         if abs(square1(1)-square2(1)) > abs(square1(2)-square2(2))

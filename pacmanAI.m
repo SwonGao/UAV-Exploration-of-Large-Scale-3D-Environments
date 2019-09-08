@@ -1,39 +1,44 @@
 function targetSquare = pacmanAI(pacman,allDirections,coins)
 
-% targetSquare = pacmanAI(pacman,enemies,allDirections)
-% 
-%% Input:
+% targetSquare = pacmanAI(pacman,enemies,allDirections) 
+% Input:
 % pacman: struct-array with all of the pacman information
 % pacman.pos: current position [x,y]
-% 
 % allDirections: cell-array with all possible moves for each tile in the game
 % coins: struct-array with all of the coins information
-%% Output:
+% Output:
 % targetSquare: this is the tile where pacman is sent to after this function is done
 
 %% Nested functions:
 % curSquare = findSquare(entity,dir):
 % returns the current tile a ghost or pacman (entity) is at right now
-%
 % possibleMoves = allPossibleMoves(entity):
 % returns all possible moves the entity (pacman or ghost) can go to at its current position
 
 %% AI
-% This part can be changed completely
-    allDist = 100*ones(4,2);
-    %{
-    for nn = 1:4 
-        if enemies(nn).status == 1
-            allDist(nn,1) = norm(pacman.pos-enemies(nn).pos);
-        elseif enemies(nn).status == 2
-            allDist(nn,2) = norm(pacman.pos-enemies(nn).pos);
+    N = 100;
+    curPos = pacman.pos;
+    list = zeros(N,2);
+    gain = zeros(N,1);
+    for i = 1 : N
+        list(i,:) = [rand rand];
+        list(i,:) = list(i,:) ./ norm(list(i,:)) .* pacman.size; %normalize
+        gain(i) = 0;        %Gain(nk) = Gain(nk-1) + Visible(M,xk)exp( )
+    end
+
+    while 1
+        [bestgain, besti] = max(gain);
+        curPos2 = curPos + list(besti,:) * pacman.size * rand;
+        % Breseham's algorithm return a set of points
+        flag = ifconnected(curPos,curPos2, coins.origindata);
+        if flag
+            break;
         end
     end
-    %}
-    [minDist1,minDist1_Index] = min(allDist(:,1));
-    [minDist2,minDist2_Index] = min(allDist(:,2));
-    if minDist2 == 100 || minDist1 <= minDist2
-        curDist = pacman.pos-enemies(minDist1_Index).pos;
+    
+    % return curSquare2 
+    % shortest path from (findSquare(curDist), findSquare(curSquare2))   
+        %{
         if norm(curDist) < 5
             if rand < 0.01 || pacman.pos(1) <= 2 || pacman.pos(1) >= 30
                 pacman.curAutoDir = (-1+2*round(rand))*round(rand(1,2));
@@ -55,10 +60,11 @@ function targetSquare = pacmanAI(pacman,allDirections,coins)
                 curSquare2 = pacman.pos + pacman.curAutoDir;
             end
         end
-    else
-        curSquare2 = enemies(minDist2_Index).pos;
-    end
-
+    %else
+    %    curSquare2 = enemies(minDist2_Index).pos;
+    %end
+    %}
+    %target limit
     if curSquare2(1) < 1 
         curSquare2(1) = 1;
     elseif curSquare2(1) > 28 
@@ -69,10 +75,7 @@ function targetSquare = pacmanAI(pacman,allDirections,coins)
     elseif curSquare2(2) > 31 
         curSquare2(2) = 31;
     end
-    
-    
     targetSquare = curSquare2;
-    
     
 %% Nested Functions
     function curSquare = findSquare(entity,dir)
